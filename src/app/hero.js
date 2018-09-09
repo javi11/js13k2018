@@ -12,10 +12,6 @@ export default class Hero {
     this.sprites = sprites;
     this.actualSprite = new Image();
     this.actualSprite.src = sprites.idle;
-    this.status = {
-      torch: 200,
-      life: 100
-    };
   }
 
   update() {

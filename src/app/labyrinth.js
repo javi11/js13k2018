@@ -1,5 +1,3 @@
-import Key from './keyboard';
-
 const requestAnimationFrame =
   window.requestAnimationFrame ||
   window.webkitRequestAnimationFrame ||
@@ -16,7 +14,20 @@ function randomGen(seed) {
   };
 }
 
-function generateLabyrinth(map, route, random) {
+function getRandomObject(random, objects) {
+  const object = objects[Math.round(random() * objects.length)];
+  const d = random() * 1;
+
+  if (object && object.available > 0 && d < object.rate) {
+    object.available -= 1;
+
+    return object;
+  }
+
+  return null;
+}
+
+function generateLabyrinth(map, route, random, objects) {
   const x = route[route.length - 1][0] | 0;
   const y = route[route.length - 1][1] | 0;
   const directions = [[1, 0], [-1, 0], [0, 1], [0, -1]], alternatives = [];
@@ -33,17 +44,28 @@ function generateLabyrinth(map, route, random) {
   if (alternatives.length === 0) {
     route.pop();
     if (route.length > 0) {
-      return generateLabyrinth(map, route, random);
+      return generateLabyrinth(map, route, random, objects);
     }
     return map;
   }
   const direction = alternatives[(random() * alternatives.length) | 0];
   route.push([direction[0] + x, direction[1] + y]);
 
-  map[(direction[1] + y) * 2][(direction[0] + x) * 2] = PATH;
-  map[direction[1] + y * 2][direction[0] + x * 2] = PATH;
+  if (objects.length > 0) {
+    let randomObject = getRandomObject(random, objects);
+    if (randomObject) {
+      map[(direction[1] + y) * 2][(direction[0] + x) * 2] = randomObject.symbol;
+      map[direction[1] + y * 2][direction[0] + x * 2] = randomObject.symbol;
+    } else {
+      map[(direction[1] + y) * 2][(direction[0] + x) * 2] = PATH;
+      map[direction[1] + y * 2][direction[0] + x * 2] = PATH;
+    }
+  } else {
+    map[(direction[1] + y) * 2][(direction[0] + x) * 2] = PATH;
+    map[direction[1] + y * 2][direction[0] + x * 2] = PATH;
+  }
 
-  return generateLabyrinth(map, route, random);
+  return generateLabyrinth(map, route, random, objects);
 }
 
 function addLimits(map, cols) {
@@ -56,7 +78,7 @@ function addLimits(map, cols) {
 }
 
 export default class Labyrinth {
-  constructor(hero, canvas, sprites, { fps = 60 } = {}) {
+  constructor(hero, canvas, sprites, levelStatus, { fps = 60 } = {}) {
     this.hero = hero;
     this.objects = [];
     this.canvas = canvas;
@@ -72,12 +94,9 @@ export default class Labyrinth {
     };
     this.config = { fps };
     this.lastTimestamp = 0;
-  }
+    this.levelStatus = levelStatus;
 
-  startGame() {
-    window.addEventListener('keyup', event => Key.onKeyup(event), false);
-    window.addEventListener('keydown', event => Key.onKeydown(event), false);
-    requestAnimationFrame(this.gameLoop.bind(this));
+    return this;
   }
 
   generateMap(width = 10, height = 10, seed = (Math.random() * 100000) | 0, tileSize = 64) {
@@ -95,40 +114,52 @@ export default class Labyrinth {
       }
     }
     this.map.cells[this.map.y * 2][this.map.x * 2] = PATH;
-    generateLabyrinth(this.map.cells, route, randomGen(seed));
+    generateLabyrinth(this.map.cells, route, randomGen(seed), this.objects);
     addLimits(this.map.cells, width * 2);
 
     return this.map;
   }
 
-  addObject(symbol, sprite, rate, action, activationKey) {
+  addObject({ symbol, sprite, rate = 0.7, available = 1, size = 32, action, activationKey } = {}) {
     const obj = {
       symbol,
       sprite,
       rate,
+      available,
       action,
-      activationKey
+      activationKey,
+      size
     };
 
     this.objects.push(obj);
   }
 
   drawVisibleSpace(ctx) {
+    const torch = this.levelStatus.torch || 100;
     ctx.beginPath();
     ctx.arc(
       -this.hero.posX + this.hero.width * 1.5,
       -this.hero.posY + this.hero.height * 1.5,
-      this.hero.status.torch,
+      torch,
       0,
       Math.PI * 2,
       true
     );
+
     ctx.clip();
     // draw background
-    var lingrad = ctx.createLinearGradient(0, -this.hero.status.torch, 0, this.hero.status.torch);
+    var lingrad = ctx.createLinearGradient(0, -torch, 0, torch);
     lingrad.addColorStop(0, '#000000');
     lingrad.addColorStop(1, '#000000');
     ctx.fillStyle = lingrad;
+  }
+
+  drawHero(ctx) {
+    ctx.drawImage(
+      this.hero.actualSprite,
+      -Math.floor(this.hero.posX - this.hero.width),
+      -Math.floor(this.hero.posY - this.hero.height)
+    );
   }
 
   draw() {
@@ -152,18 +183,35 @@ export default class Labyrinth {
         ctx.fillStyle = 'rgba(0,0,0,0)';
         if (this.map.cells[iy][ix] === WALL) {
           ctx.drawImage(this.sprites[WALL], ix * tileSize, iy * tileSize);
-        } else if (this.map.cells[iy][ix] === PATH) {
+        } else {
           ctx.drawImage(this.sprites[PATH], ix * tileSize, iy * tileSize);
+
+          if (this.map.cells[iy][ix] !== PATH) {
+            const object = this.objects.find(obj => obj.symbol === this.map.cells[iy][ix]);
+            object &&
+              ctx.drawImage(
+                object.sprite,
+                ix * tileSize + object.size / 2,
+                iy * tileSize + object.size / 2
+              );
+          }
         }
       }
     }
-    ctx.drawImage(
-      this.hero.actualSprite,
-      -Math.floor(this.hero.posX - this.hero.width),
-      -Math.floor(this.hero.posY - this.hero.height)
-    );
+
+    this.drawHero(ctx);
 
     ctx.restore();
+  }
+
+  triggerObjectAction(symbol, posX, posY) {
+    if (symbol !== WALL && symbol !== PATH) {
+      const object = this.objects.find(obj => obj.symbol === symbol);
+      if (object && typeof object.action === 'function') {
+        this.map.cells[posX][posY] = PATH;
+        object.action(this.hero, this.levelStatus, this.map.cells, posX, posY);
+      }
+    }
   }
 
   checkCollisions(posX, posY) {
@@ -171,6 +219,11 @@ export default class Labyrinth {
     const y1 = Math.abs(Math.floor(posY / this.map.tileSize));
     const x2 = Math.abs(Math.floor((posX + this.hero.width - 3) / this.map.tileSize));
     const y2 = Math.abs(Math.floor((posY + this.hero.height - 5) / this.map.tileSize));
+
+    this.triggerObjectAction(this.map.cells[y1][x1], y1, x1);
+    this.triggerObjectAction(this.map.cells[y2][x1], y2, x1);
+    this.triggerObjectAction(this.map.cells[y1][x2], y1, x2);
+    this.triggerObjectAction(this.map.cells[y2][x2], y2, x2);
 
     if (
       this.map.cells[y1][x1] === WALL ||
@@ -191,6 +244,7 @@ export default class Labyrinth {
 
     if (delta > 1000 / this.config.fps) {
       this.hero.update();
+      this.levelStatus.update();
 
       if (this.hero.speedX !== 0 || this.hero.speedY !== 0) {
         this.lastTimestamp = timestamp - delta % (1000 / this.config.fps);

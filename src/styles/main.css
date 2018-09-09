@@ -19,3 +19,25 @@ canvas {
   cursor: none;
   background-color: black;
 }
+
+.game-info {
+  position: absolute;
+  top: 20;
+  left: 20;
+  z-index: 999;
+}
+
+.bar {
+  width: 100px;
+  display: flex;
+  align-content: center;
+  margin-top: 20px;
+  color: white;
+  justify-content: left;
+}
+
+.bar div {
+  margin-left: 10px;
+  font-weight: bold;
+  align-self: center;
+}
