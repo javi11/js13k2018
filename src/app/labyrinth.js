@@ -164,9 +164,9 @@ export default class Labyrinth {
     const posY = -this.hero.posY + this.hero.height * 1.5;
     const torch = this.levelStatus.torch || 100;
     const grd = ctx.createRadialGradient(posX, posY, torch, posX, posY, 0);
-    grd.addColorStop(1, 'transparent');
     grd.addColorStop(0, 'black');
 
+    grd.addColorStop(1, 'transparent');
     ctx.fillStyle = grd;
     ctx.fillRect(-this.camera.x, -this.camera.y, this.canvas.width, this.canvas.height);
   }

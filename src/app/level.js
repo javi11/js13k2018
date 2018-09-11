@@ -171,10 +171,10 @@ export default class Level {
     muteBtn.onclick = () => {
       if (this.levelMusic.isOn()) {
         this.levelMusic.stop();
-        muteBtn.innerHTML = '🔇';
+        muteBtn.innerHTML = 'UNMUTE';
       } else {
         this.levelMusic.start();
-        muteBtn.innerHTML = '🔊';
+        muteBtn.innerHTML = 'MUTE';
       }
     };
     this.onEndLevel = onEndLevel;
