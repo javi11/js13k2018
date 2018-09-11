@@ -30,7 +30,7 @@ export default class Level {
     );
     const objects = this.getLevelObjects(difficulty, img);
     objects.forEach(obj => this.labyrinth.addObject(obj));
-    console.log(this.labyrinth.generateMap(mapSize, mapSize));
+    this.labyrinth.generateMap(mapSize, mapSize);
 
     this.levelMusic = new Music();
   }
