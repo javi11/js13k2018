@@ -27,7 +27,7 @@ function getRandomObject(random, objects) {
   return null;
 }
 
-function generateLabyrinth(map, route, random, objects) {
+function generateLabyrinth(map, route, random, objects, exitSet = false, isFinalLv) {
   const x = route[route.length - 1][0] | 0;
   const y = route[route.length - 1][1] | 0;
   const directions = [[1, 0], [-1, 0], [0, 1], [0, -1]], alternatives = [];
@@ -44,18 +44,23 @@ function generateLabyrinth(map, route, random, objects) {
   if (alternatives.length === 0) {
     route.pop();
     if (route.length > 0) {
-      return generateLabyrinth(map, route, random, objects);
+      return generateLabyrinth(map, route, random, objects, exitSet, isFinalLv);
     }
     return map;
   }
   const direction = alternatives[(random() * alternatives.length) | 0];
   route.push([direction[0] + x, direction[1] + y]);
 
-  if (objects.length > 0) {
+  if (!exitSet && x + y > map.length / 2) {
+    // Exit symbol
+    exitSet = true;
+    map[(direction[1] + y) * 2][(direction[0] + x) * 2] = isFinalLv ? 'O' : 'W';
+    map[direction[1] + y * 2][direction[0] + x * 2] = PATH;
+  } else if (objects.length > 0) {
     let randomObject = getRandomObject(random, objects);
     if (randomObject) {
       map[(direction[1] + y) * 2][(direction[0] + x) * 2] = randomObject.symbol;
-      map[direction[1] + y * 2][direction[0] + x * 2] = randomObject.symbol;
+      map[direction[1] + y * 2][direction[0] + x * 2] = PATH;
     } else {
       map[(direction[1] + y) * 2][(direction[0] + x) * 2] = PATH;
       map[direction[1] + y * 2][direction[0] + x * 2] = PATH;
@@ -65,7 +70,7 @@ function generateLabyrinth(map, route, random, objects) {
     map[direction[1] + y * 2][direction[0] + x * 2] = PATH;
   }
 
-  return generateLabyrinth(map, route, random, objects);
+  return generateLabyrinth(map, route, random, objects, exitSet, isFinalLv);
 }
 
 function addLimits(map, cols) {
@@ -75,10 +80,12 @@ function addLimits(map, cols) {
     row.unshift(WALL);
     row.push(WALL);
   });
+
+  map[1][1] = 'E';
 }
 
 export default class Labyrinth {
-  constructor(hero, canvas, sprites, levelStatus, { fps = 60 } = {}) {
+  constructor(hero, canvas, sprites, levelStatus, isFinalLv, { fps = 50 } = {}) {
     this.hero = hero;
     this.objects = [];
     this.canvas = canvas;
@@ -92,9 +99,13 @@ export default class Labyrinth {
       width: 200,
       height: 200
     };
+    this.isFinalLv = isFinalLv;
     this.config = { fps };
     this.lastTimestamp = 0;
     this.levelStatus = levelStatus;
+    this.animationTimer = 20;
+    this.animationIndex = 0;
+    this.animationFrame;
 
     return this;
   }
@@ -114,13 +125,25 @@ export default class Labyrinth {
       }
     }
     this.map.cells[this.map.y * 2][this.map.x * 2] = PATH;
-    generateLabyrinth(this.map.cells, route, randomGen(seed), this.objects);
+    generateLabyrinth(this.map.cells, route, randomGen(seed), this.objects, false, this.isFinalLv);
     addLimits(this.map.cells, width * 2);
 
     return this.map;
   }
 
-  addObject({ symbol, sprite, rate = 0.7, available = 1, size = 32, action, activationKey } = {}) {
+  addObject(
+    {
+      symbol,
+      sprite,
+      rate = 0.7,
+      available = 1,
+      size = 32,
+      action,
+      activationKey,
+      forever,
+      move = true
+    } = {}
+  ) {
     const obj = {
       symbol,
       sprite,
@@ -128,37 +151,37 @@ export default class Labyrinth {
       available,
       action,
       activationKey,
-      size
+      size,
+      forever,
+      move
     };
 
     this.objects.push(obj);
   }
 
   drawVisibleSpace(ctx) {
+    const posX = -this.hero.posX + this.hero.width * 1.5;
+    const posY = -this.hero.posY + this.hero.height * 1.5;
     const torch = this.levelStatus.torch || 100;
-    ctx.beginPath();
-    ctx.arc(
-      -this.hero.posX + this.hero.width * 1.5,
-      -this.hero.posY + this.hero.height * 1.5,
-      torch,
-      0,
-      Math.PI * 2,
-      true
-    );
+    const grd = ctx.createRadialGradient(posX, posY, torch, posX, posY, 0);
+    grd.addColorStop(1, 'transparent');
+    grd.addColorStop(0, 'black');
 
-    ctx.clip();
-    // draw background
-    var lingrad = ctx.createLinearGradient(0, -torch, 0, torch);
-    lingrad.addColorStop(0, '#000000');
-    lingrad.addColorStop(1, '#000000');
-    ctx.fillStyle = lingrad;
+    ctx.fillStyle = grd;
+    ctx.fillRect(-this.camera.x, -this.camera.y, this.canvas.width, this.canvas.height);
   }
 
-  drawHero(ctx) {
+  drawHero(ctx, animationIndex) {
     ctx.drawImage(
-      this.hero.actualSprite,
+      this.hero.sprites.img,
+      this.hero.actualSprite[animationIndex] * this.hero.width,
+      0,
+      this.hero.width,
+      this.hero.height,
       -Math.floor(this.hero.posX - this.hero.width),
-      -Math.floor(this.hero.posY - this.hero.height)
+      -Math.floor(this.hero.posY - this.hero.height),
+      this.hero.width,
+      this.hero.height
     );
   }
 
@@ -172,43 +195,84 @@ export default class Labyrinth {
     ctx.save();
     ctx.translate(this.camera.x, this.camera.y);
 
-    // Create a circular clipping path
-    this.drawVisibleSpace(ctx);
-
     ctx.fillRect(-this.camera.x, -this.camera.y, this.canvas.width, this.canvas.height);
 
     for (let ix = 0; ix < this.map.cells.length; ix++) {
       for (let iy = 0; iy < this.map.cells[ix].length; iy++) {
         ctx.clearRect(ix * tileSize, iy * tileSize, tileSize, tileSize);
         ctx.fillStyle = 'rgba(0,0,0,0)';
+        let sprite;
         if (this.map.cells[iy][ix] === WALL) {
-          ctx.drawImage(this.sprites[WALL], ix * tileSize, iy * tileSize);
+          sprite = this.sprites[WALL];
         } else {
-          ctx.drawImage(this.sprites[PATH], ix * tileSize, iy * tileSize);
-
-          if (this.map.cells[iy][ix] !== PATH) {
-            const object = this.objects.find(obj => obj.symbol === this.map.cells[iy][ix]);
-            object &&
-              ctx.drawImage(
-                object.sprite,
-                ix * tileSize + object.size / 2,
-                iy * tileSize + object.size / 2
-              );
+          sprite = this.sprites[PATH];
+        }
+        ctx.drawImage(
+          sprite.sprite,
+          sprite.srcX,
+          sprite.srcY,
+          tileSize,
+          tileSize,
+          ix * tileSize,
+          iy * tileSize,
+          tileSize,
+          tileSize
+        );
+        if (this.map.cells[iy][ix] !== WALL && this.map.cells[iy][ix] !== PATH) {
+          const object = this.objects.find(obj => obj.symbol === this.map.cells[iy][ix]);
+          if (object) {
+            let moviment = 0;
+            if (object.move) {
+              if (this.animationIndex > 0) {
+                moviment = 2;
+              } else {
+                moviment = -2;
+              }
+            }
+            const animation =
+              object.sprite.animation[this.animationIndex] || object.sprite.animation[0];
+            ctx.drawImage(
+              object.sprite.img,
+              animation * object.size + 1.2,
+              0,
+              object.size,
+              object.size,
+              ix * tileSize + object.size / 2,
+              iy * tileSize + object.size / 2 + moviment,
+              object.size,
+              object.size
+            );
           }
         }
       }
     }
 
-    this.drawHero(ctx);
+    this.drawHero(ctx, this.animationIndex);
+
+    // Create a circular clipping path
+    this.drawVisibleSpace(ctx);
 
     ctx.restore();
+
+    if (this.animationTimer === 0) {
+      if (this.animationIndex === 1) {
+        this.animationIndex = 0;
+      } else {
+        this.animationIndex += 1;
+      }
+      this.animationTimer = 20;
+    } else {
+      this.animationTimer -= 1;
+    }
   }
 
   triggerObjectAction(symbol, posX, posY) {
     if (symbol !== WALL && symbol !== PATH) {
       const object = this.objects.find(obj => obj.symbol === symbol);
       if (object && typeof object.action === 'function') {
-        this.map.cells[posX][posY] = PATH;
+        if (!object.forever) {
+          this.map.cells[posX][posY] = PATH;
+        }
         object.action(this.hero, this.levelStatus, this.map.cells, posX, posY);
       }
     }
@@ -240,11 +304,11 @@ export default class Labyrinth {
   gameLoop() {
     const timestamp = Date.now();
     const delta = timestamp - this.lastTimestamp;
-    requestAnimationFrame(this.gameLoop.bind(this));
+    this.animationFrame = requestAnimationFrame(this.gameLoop.bind(this));
 
     if (delta > 1000 / this.config.fps) {
       this.hero.update();
-      this.levelStatus.update();
+      this.levelStatus.update(this.hero);
 
       if (this.hero.speedX !== 0 || this.hero.speedY !== 0) {
         this.lastTimestamp = timestamp - delta % (1000 / this.config.fps);
@@ -267,7 +331,9 @@ export default class Labyrinth {
         } else {
           newPosY = this.hero.posY + this.hero.speedY;
         }
-
+        if (this.hero.speed < this.hero.initialSpeed) {
+          this.hero.speed = this.hero.initialSpeed;
+        }
         const collide = this.checkCollisions(newPosX, newPosY);
         if (!collide) {
           this.hero.posX = newPosX;

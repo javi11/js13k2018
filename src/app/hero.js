@@ -10,8 +10,28 @@ export default class Hero {
     this.speedY = 0;
     this.speed = speed;
     this.sprites = sprites;
-    this.actualSprite = new Image();
-    this.actualSprite.src = sprites.idle;
+    this.actualSprite = this.sprites.idle;
+    this.initialSpeed = speed;
+    this.conditions = [];
+  }
+
+  activateCondition(name, fn, onConditionEnd, duration) {
+    const sameConditionActivated = this.conditions.some(condition => condition.name = name);
+    if (!sameConditionActivated) {
+      this.conditions.push({
+        name,
+        duration,
+        startedAt: Date.now()
+      });
+
+      fn(this);
+
+      setTimeout(() => {
+        onConditionEnd(this);
+        const index = this.conditions.findIndex(cond => cond.name === name);
+        this.conditions.splice(index, 1);
+      }, duration);
+    }
   }
 
   update() {
@@ -33,30 +53,30 @@ export default class Hero {
   setIdle() {
     this.speedY = 0;
     this.speedX = 0;
-    this.actualSprite.src = this.sprites.idle;
+    this.actualSprite = this.sprites.idle;
   }
 
   moveUp() {
     this.speedX = 0;
     this.speedY = +this.speed;
-    this.actualSprite.src = this.sprites.walkingUp;
+    this.actualSprite = this.sprites.up;
   }
 
   moveLeft() {
     this.speedY = 0;
     this.speedX = +this.speed;
-    this.actualSprite.src = this.sprites.walkingLeft;
+    this.actualSprite = this.sprites.left;
   }
 
   moveDown() {
     this.speedX = 0;
     this.speedY = -this.speed;
-    this.actualSprite.src = this.sprites.walkingDown;
+    this.actualSprite = this.sprites.down;
   }
 
   moveRight() {
     this.speedY = 0;
     this.speedX = -this.speed;
-    this.actualSprite.src = this.sprites.walkingRight;
+    this.actualSprite = this.sprites.right;
   }
 }

@@ -1,0 +1,52 @@
+[
+  {
+    "talker": "Storyteller",
+    "text": "Richy arrive to the living room and is waiting to the router to be restarted...",
+    "color": "#d6d13e"
+  },
+  {
+    "talker": "Richy",
+    "text": "Come on, come on go online, come on.",
+    "color": "#1ea21c"
+  },
+  {
+    "talker": "Storyteller",
+    "text": "The router turn on his green light, now Richy is good to go.",
+    "color": "#d6d13e"
+  },
+  {
+    "talker": "Richy",
+    "text": "I have to go back before the game ends.",
+    "color": "#1ea21c"
+  },
+  {
+    "talker": "Storyteller",
+    "text": "Richy runs to his desktop, click on restart the connection, and... voila the game is on again.",
+    "color": "#d6d13e"
+  },
+  {
+    "talker": "Richy",
+    "text": "Yay, lets win this noobs...",
+    "color": "#1ea21c"
+  },
+  {
+    "talker": "Storyteller",
+    "text": "Richy continue playing but he notice that someone was behind him...",
+    "color": "#d6d13e"
+  },
+  {
+    "talker": "SoundEffect",
+    "text": "BAMMM!!!",
+    "color": "blue"
+  },
+  {
+    "talker": "Storyteller",
+    "text": "His mom slap him in his face with the flip flops.",
+    "color": "#d6d13e"
+  },
+  {
+    "talker": "Mom",
+    "text": "<Spanish> Se acabó la virtrolita a comer, carajo!!",
+    "color": "#a21c2f"
+  }
+]

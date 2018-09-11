@@ -1,0 +1,52 @@
+[
+  {
+    "talker": "Storyteller",
+    "text": "Richy has arrived to the living room on time, he just turn on the router and is waiting for the green light...",
+    "color": "#d6d13e"
+  },
+  {
+    "talker": "Richy",
+    "text": "Come on, come on go online, come on...",
+    "color": "#1ea21c"
+  },
+  {
+    "talker": "Storyteller",
+    "text": "The router turn on his green light, now Richy is good to go.",
+    "color": "#d6d13e"
+  },
+  {
+    "talker": "Richy",
+    "text": "I have to go back before the game ends.",
+    "color": "#1ea21c"
+  },
+  {
+    "talker": "Storyteller",
+    "text": "Richy runs to his desktop, click on restart the connection, and... voila the game is on again.",
+    "color": "#d6d13e"
+  },
+  {
+    "talker": "Richy",
+    "text": "Yay, lets win this noobs...",
+    "color": "#1ea21c"
+  },
+  {
+    "talker": "END",
+    "text": "You just won!",
+    "color": "#d6d13e"
+  },
+  {
+    "talker": "Developer",
+    "text": "Javier Blanco",
+    "color": "#3399ff"
+  },
+  {
+    "talker": "Art",
+    "text": "Victor Boza",
+    "color": "#009933"
+  },
+  {
+    "talker": "Thanks",
+    "text": "Gracias por jugar :)",
+    "color": "#ffff66"
+  }
+]

@@ -1,0 +1,52 @@
+[
+  {
+    "talker": "Mom",
+    "text": "Richy come here, is time to dinner!!!",
+    "color": "#a21c2f"
+  },
+  {
+    "talker": "Richy",
+    "text": "I can't!!!",
+    "color": "#1ea21c"
+  },
+  {
+    "talker": "Mom",
+    "text": "I said, come here!",
+    "color": "#a21c2f"
+  },
+  {
+    "talker": "Richy",
+    "text": "...I'm playing Fortnite!",
+    "color": "#1ea21c"
+  },
+  {
+    "talker": "Mom",
+    "text": "I will turn you offline if you don't come right now!",
+    "color": "#a21c2f"
+  },
+  {
+    "talker": "Richy",
+    "text": "...",
+    "color": "#1ea21c"
+  },
+  {
+    "talker": "Storyteller",
+    "text": "Tsss... Suddenly the game stops, and... an offline popup shows up on the computer screen.",
+    "color": "#d6d13e"
+  },
+  {
+    "talker": "Richy",
+    "text": "AAAA, what the f%&%$ I will kill my mom, AHHHH!!!",
+    "color": "#1ea21c"
+  },
+  {
+    "talker": "Storyteller",
+    "text": "Quick help Richy connect the router again!",
+    "color": "#d6d13e"
+  },
+  {
+    "talker": "Storyteller",
+    "text": "Go down the stairs and on level 3 find the router and turn it ON, before is to late!",
+    "color": "#d6d13e"
+  }
+]
