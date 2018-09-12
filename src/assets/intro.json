@@ -10,11 +10,6 @@
     "color": "#1ea21c"
   },
   {
-    "talker": "Mom",
-    "text": "I said, come here!",
-    "color": "#a21c2f"
-  },
-  {
     "talker": "Richy",
     "text": "...I'm playing Fortnite!",
     "color": "#1ea21c"
@@ -23,11 +18,6 @@
     "talker": "Mom",
     "text": "I will turn you offline if you don't come right now!",
     "color": "#a21c2f"
-  },
-  {
-    "talker": "Richy",
-    "text": "...",
-    "color": "#1ea21c"
   },
   {
     "talker": "Storyteller",
@@ -41,12 +31,7 @@
   },
   {
     "talker": "Storyteller",
-    "text": "Hurry up, help Richy connect the router again!",
-    "color": "#d6d13e"
-  },
-  {
-    "talker": "Storyteller",
-    "text": "Go down the stairs and on level 3 find the router and turn it ON, before is to late!",
+    "text": "Hurry up, help Richy connect the router again!, Go down the stairs and on level 3 find the router and turn it ON, before is to late!",
     "color": "#d6d13e"
   }
 ]

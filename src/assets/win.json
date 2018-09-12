@@ -31,22 +31,7 @@
   },
   {
     "talker": "END",
-    "text": "You just won!",
+    "text": "You just won!. Developer:Javier Blanco. Art: Victor Boza",
     "color": "#d6d13e"
-  },
-  {
-    "talker": "Developer",
-    "text": "Javier Blanco",
-    "color": "#3399ff"
-  },
-  {
-    "talker": "Art",
-    "text": "Victor Boza",
-    "color": "#009933"
-  },
-  {
-    "talker": "Thanks",
-    "text": "Gracias por jugar :)",
-    "color": "#ffff66"
   }
 ]
