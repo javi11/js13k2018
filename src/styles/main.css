@@ -4,6 +4,7 @@ body {
   align-items: center;
   overflow: hidden;
   background-color: black;
+  font-family: 'Hobo Std'
 }
 
 .text {
