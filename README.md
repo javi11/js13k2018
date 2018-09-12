@@ -1,6 +1,6 @@
 # js13k2018
 
-Help Richy turn on his router again before the Fornite match ends. Help him go online again.
+Help Richy turn on his router again before the Fortnite match ends. Help him go online again.
 
 ### How to run
 

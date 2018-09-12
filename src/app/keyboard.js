@@ -1,6 +1,6 @@
 class Keyboard {
   constructor() {
-    this._pressed = {};
+    this.pressed = {};
     this.LEFT = 37;
     this.UP = 38;
     this.RIGHT = 39;
@@ -8,15 +8,15 @@ class Keyboard {
   }
 
   isDown(keyCode) {
-    return this._pressed[keyCode];
+    return this.pressed[keyCode];
   }
 
   onKeydown(event) {
-    this._pressed[event.keyCode] = true;
+    this.pressed[event.keyCode] = true;
   }
 
   onKeyup(event) {
-    delete this._pressed[event.keyCode];
+    delete this.pressed[event.keyCode];
   }
 }
 
